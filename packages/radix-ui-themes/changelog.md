@@ -1,6 +1,6 @@
 # Changelog
 
-## Up next
+## 2.0.0
 
 - General
   - Combine selectors in the CSS build, improving the developer experience when inspecting elements in the browser.
