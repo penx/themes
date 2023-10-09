@@ -3,16 +3,21 @@ import classNames from 'classnames';
 import { Slot } from './slot';
 import { gridPropDefs } from './grid.props';
 import {
-  extractMarginProps,
-  withMarginProps,
   extractLayoutProps,
-  withLayoutProps,
+  extractMarginProps,
+  styles,
   withBreakpoints,
-  isBreakpointsObject,
-  hasOwnProperty,
+  withInlineLayoutStyles,
+  withLayoutProps,
+  withMarginProps,
 } from '../helpers';
 
-import type { MarginProps, LayoutProps, GetPropDefTypes } from '../helpers';
+import {
+  MarginProps,
+  LayoutProps,
+  GetPropDefTypes,
+  withInlineResponsiveVariable,
+} from '../helpers';
 
 type GridElement = React.ElementRef<'div'>;
 type GridOwnProps = GetPropDefTypes<typeof gridPropDefs>;
@@ -38,54 +43,10 @@ const Grid = React.forwardRef<GridElement, GridProps>((props, forwardedRef) => {
     gap = gridPropDefs.gap.default,
     gapX = gridPropDefs.gapX.default,
     gapY = gridPropDefs.gapY.default,
-    style: propStyle,
+    style,
     ...gridProps
   } = layoutRest;
   const Comp = asChild ? Slot : 'div';
-
-  let style: React.CSSProperties | Record<string, string | undefined> = {
-    ...propStyle,
-  };
-
-  if (typeof columns === 'string') {
-    style = {
-      '--grid-template-columns-initial': parseGridValue(columns),
-      ...style,
-    };
-  }
-
-  if (typeof rows === 'string') {
-    style = {
-      '--grid-template-rows-initial': parseGridValue(rows),
-      ...style,
-    };
-  }
-
-  if (isBreakpointsObject(columns)) {
-    for (const breakpoint in columns) {
-      if (hasOwnProperty(columns, breakpoint)) {
-        const customProperty = `--grid-template-columns-${breakpoint}`;
-
-        style = {
-          [customProperty]: parseGridValue(columns[breakpoint]),
-          ...style,
-        };
-      }
-    }
-  }
-
-  if (isBreakpointsObject(rows)) {
-    for (const breakpoint in rows) {
-      if (hasOwnProperty(rows, breakpoint)) {
-        const customProperty = `--grid-template-rows-${breakpoint}`;
-
-        style = {
-          [customProperty]: parseGridValue(rows[breakpoint]),
-          ...style,
-        };
-      }
-    }
-  }
 
   return (
     <Comp
@@ -102,9 +63,16 @@ const Grid = React.forwardRef<GridElement, GridProps>((props, forwardedRef) => {
         withBreakpoints(gapX, 'rt-r-cg'),
         withBreakpoints(gapY, 'rt-r-rg'),
         withLayoutProps(layoutProps),
-        withMarginProps(marginProps)
+        withMarginProps(marginProps),
+        withBreakpoints(columns, 'rt-r-gtc', undefined, true),
+        withBreakpoints(rows, 'rt-r-gtr', undefined, true)
       )}
-      style={Object.keys(style).length ? style : undefined}
+      style={styles(
+        withInlineResponsiveVariable('--grid-template-rows', rows, parseGridValue),
+        withInlineResponsiveVariable('--grid-template-columns', columns, parseGridValue),
+        withInlineLayoutStyles(layoutProps),
+        style
+      )}
     />
   );
 });

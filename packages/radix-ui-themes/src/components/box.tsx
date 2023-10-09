@@ -3,11 +3,13 @@ import classNames from 'classnames';
 import { Slot } from './slot';
 import { boxPropDefs } from './box.props';
 import {
-  extractMarginProps,
-  withMarginProps,
   extractLayoutProps,
-  withLayoutProps,
+  extractMarginProps,
+  styles,
   withBreakpoints,
+  withInlineLayoutStyles,
+  withLayoutProps,
+  withMarginProps,
 } from '../helpers';
 
 import type { MarginProps, LayoutProps, GetPropDefTypes } from '../helpers';
@@ -24,7 +26,15 @@ interface BoxProps
 const Box = React.forwardRef<BoxElement, BoxProps>((props, forwardedRef) => {
   const { rest: marginRest, ...marginProps } = extractMarginProps(props);
   const { rest: layoutRest, ...layoutProps } = extractLayoutProps(marginRest);
-  const { className, asChild, display = boxPropDefs.display.default, ...boxProps } = layoutRest;
+
+  const {
+    className,
+    asChild,
+    display = boxPropDefs.display.default,
+    style,
+    ...boxProps
+  } = layoutRest;
+
   const Comp = asChild ? Slot : 'div';
   return (
     <Comp
@@ -37,6 +47,7 @@ const Box = React.forwardRef<BoxElement, BoxProps>((props, forwardedRef) => {
         withLayoutProps(layoutProps),
         withMarginProps(marginProps)
       )}
+      style={styles(withInlineLayoutStyles(layoutProps), style)}
     />
   );
 });

@@ -1,4 +1,4 @@
-import { withBreakpoints } from '../breakpoints';
+import { withBreakpoints, withInlineResponsiveVariable } from '../breakpoints';
 
 import type { PropDef, GetPropDefTypes } from './prop-def';
 
@@ -71,6 +71,8 @@ const layoutPropDefs = {
   height: { type: 'enum', values: widthHeightValues, default: undefined, responsive: true },
   shrink: { type: 'enum', values: flexShrinkValues, default: undefined, responsive: true },
   grow: { type: 'enum', values: flexGrowValues, default: undefined, responsive: true },
+  column: { type: 'string', default: undefined, responsive: true },
+  row: { type: 'string', default: undefined, responsive: true },
 } satisfies {
   p: PropDef<(typeof paddingValues)[number]>;
   px: PropDef<(typeof paddingValues)[number]>;
@@ -89,6 +91,8 @@ const layoutPropDefs = {
   height: PropDef<(typeof widthHeightValues)[number]>;
   shrink: PropDef<(typeof flexShrinkValues)[number]>;
   grow: PropDef<(typeof flexGrowValues)[number]>;
+  column: PropDef<string>;
+  row: PropDef<string>;
 };
 
 type LayoutProps = GetPropDefTypes<typeof layoutPropDefs>;
@@ -106,6 +110,8 @@ function extractLayoutProps<T extends LayoutProps>(props: T) {
     right = layoutPropDefs.right.default,
     shrink = layoutPropDefs.shrink.default,
     grow = layoutPropDefs.grow.default,
+    column = layoutPropDefs.column.default,
+    row = layoutPropDefs.row.default,
     ...rest
   } = paddingRest;
   return {
@@ -120,6 +126,8 @@ function extractLayoutProps<T extends LayoutProps>(props: T) {
     right,
     shrink,
     grow,
+    column,
+    row,
     rest,
   };
 }
@@ -137,9 +145,18 @@ function withLayoutProps(props: LayoutProps) {
     withBreakpoints(props.bottom, 'rt-r-bottom'),
     withBreakpoints(props.left, 'rt-r-left'),
     withBreakpoints(props.right, 'rt-r-right'),
+    props.column ? 'rt-r-gc' : false,
+    props.row ? 'rt-r-gr' : false,
   ]
     .filter(Boolean)
     .join(' ');
+}
+
+function withInlineLayoutStyles(props: LayoutProps) {
+  return {
+    ...withInlineResponsiveVariable('--grid-column', props.column),
+    ...withInlineResponsiveVariable('--grid-row', props.row),
+  };
 }
 
 export {
@@ -149,5 +166,6 @@ export {
   layoutPropDefs,
   extractLayoutProps,
   withLayoutProps,
+  withInlineLayoutStyles,
 };
 export type { PaddingProps, LayoutProps };
